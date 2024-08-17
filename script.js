@@ -4,7 +4,11 @@ var player = {
 	'roll': 0,
 	'pitch': 0,
 	'pitch_scale': 7,
+	'heading_scale': 9,
 	'heading': 0
+}
+function heading(deg) {
+	return (deg + 720) % 360;
 }
 function drawHorizon(draw, width, height) {
 	draw.push();
@@ -18,8 +22,18 @@ function drawHorizon(draw, width, height) {
 	draw.fill('#7e513c');
 	draw.rect(-width, displacement, width * 2, height * 2);
 	draw.stroke('white');
+	draw.fill('white');
 	draw.strokeWeight(2);
 	draw.line(-width / 2, original_displacement, width / 2, original_displacement);
+	const start_hdg = Math.floor(player.heading / 10) * 10 - 140;
+	for (var i = start_hdg;
+		i <= start_hdg + 280; i += 10) {
+		draw.strokeWeight(2);
+		var x = -(player.heading - i) * player.heading_scale;
+		draw.line(x, original_displacement, x, original_displacement - 10);
+		draw.strokeWeight(0);
+		draw.text(heading(i) / 10, x, original_displacement + 9);
+	}
 	for (var i = -90; i <= 90; i += 10) {
 		var y = original_displacement - i * player.pitch_scale;
 		draw.strokeWeight(2);
@@ -33,7 +47,6 @@ function drawHorizon(draw, width, height) {
 		}
 		if (i) {
 			draw.strokeWeight(0);
-			draw.fill('white');
 			draw.text(i, -45, y);
 			draw.text(i, 45, y);
 		}
@@ -71,16 +84,16 @@ function update() {
 	draw.vertex(-53, 12);
 	draw.vertex(-59, 12);
 	draw.vertex(-59, 3);
-	draw.vertex(-90, 3);
-	draw.vertex(-90, -3);
+	draw.vertex(-100, 3);
+	draw.vertex(-100, -3);
 	draw.endShape('close');
 	draw.beginShape();
 	draw.vertex(53, -3);
 	draw.vertex(53, 12);
 	draw.vertex(59, 12);
 	draw.vertex(59, 3);
-	draw.vertex(90, 3);
-	draw.vertex(90, -3);
+	draw.vertex(100, 3);
+	draw.vertex(100, -3);
 	draw.endShape('close');
 	draw.strokeWeight(0);
 	draw.rect(width * 0.3, -height / 2, width * 0.4, height);
@@ -125,4 +138,8 @@ window.addEventListener("deviceorientation", function (event) {
 	else processedGamma += 90;
 	player.pitch = processedGamma;
 	player.roll = -spin + 90;
+	if ('webkitCompassHeading' in event) player.heading = event.webkitCompassHeading;
+});
+window.addEventListener("deviceorientationabsolute", (ev) => {
+	player.heading = ev.alpha;
 });
