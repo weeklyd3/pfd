@@ -12,6 +12,7 @@ var player = {
 	'ones_digit_scale': 20,
 	'tens_digit_scale': 25,
 	'heading': 0,
+	'track': 0,
 	'inertial_velocity': [0, 0],
 }
 function heading(deg) {
@@ -60,6 +61,11 @@ function drawHorizon(draw, width, height) {
 	}
 	draw.strokeWeight(0);
 	draw.triangle(0, -150, 7, -140, -7, -140);
+	draw.fill(draw.color(0, 0, 0, 0));
+	draw.stroke('lime');
+	draw.strokeWeight(2);
+	player.track = trackInterpolator.update();
+	draw.circle((player.track - player.heading) * player.heading_scale, displacement, 20);
 	draw.pop();
 }
 function update() {
@@ -115,6 +121,7 @@ function update() {
 	draw.pop();
 }
 var speedInterpolator = new Interpolator(0);
+var trackInterpolator = new Interpolator(0);
 function updateSpeed(draw) {
 	player.speed = speedInterpolator.update();
 	draw.clear();
