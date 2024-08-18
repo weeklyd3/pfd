@@ -3,9 +3,16 @@ var height = 540;
 var player = {
 	'roll': 0,
 	'pitch': 0,
+	'pitch_offset': 0,
 	'pitch_scale': 7,
 	'heading_scale': 9,
-	'heading': 0
+	'speed': 0,
+	'speed_last_frame': 0,
+	'speed_scale': 4,
+	'ones_digit_scale': 20,
+	'tens_digit_scale': 25,
+	'heading': 0,
+	'inertial_velocity': [0, 0],
 }
 function heading(deg) {
 	return (deg + 720) % 360;
@@ -98,12 +105,89 @@ function update() {
 	draw.strokeWeight(0);
 	draw.rect(width * 0.3, -height / 2, width * 0.4, height);
 	draw.pop();
+	draw.push();
+	draw.strokeWeight(0);
+	draw.translate(ahrs_width / 2, height / 2);
+	draw.fill(draw.color(0, 0, 0, 125));
+	draw.rect(-250, -height * 0.3, 80, height * 0.7);
+	updateSpeed(speed);
+	draw.image(speed, -250, -height * 0.3);
+	draw.pop();
 }
+var speedInterpolator = new Interpolator(0);
+function updateSpeed(draw) {
+	player.speed = speedInterpolator.update();
+	draw.clear();
+	draw.push();
+	draw.stroke('white');
+	draw.fill('white');
+	draw.strokeWeight(3);
+	var start_speed = Math.floor((player.speed - (height * 0.35) / 7) / 10) * 10 - 20;
+	for (var i = start_speed; i < (start_speed + height * 1.2 / 7 + 10); i += 10) {
+		if (i < 0) continue;
+		var y = (player.speed - i) * player.speed_scale;
+		draw.strokeWeight(3);
+		draw.line(0, y, (i % 20) ? -25 : -40, y);
+		if (!(i % 20)) {
+			draw.strokeWeight(0);
+			draw.text(i, -50, y);
+		}
+	}
+	draw.strokeWeight(0);
+	preciseSpeed.clear();
+	preciseSpeed.background('white');
+	preciseSpeed.fill('black');
+	preciseSpeed.rect(-27, -17, 54, 34);
+	preciseSpeed.fill('white');
+	var digit_offset = player.ones_digit_scale * (player.speed % 1);
+	var last_digit = Math.floor(player.speed) % 10;
+	preciseSpeed.text(last_digit, 15, digit_offset);
+	preciseSpeed.text((last_digit + 1) % 10, 15, digit_offset - player.ones_digit_scale);
+	preciseSpeed.text((last_digit + 2) % 10, 15, digit_offset - 2 * player.ones_digit_scale);
+	preciseSpeed.text((last_digit + 9) % 10, 15, digit_offset + player.ones_digit_scale);
+	preciseSpeed.text((last_digit + 8) % 10, 15, digit_offset + player.ones_digit_scale * 2);
+	// tens digit
+	var tens_digit = Math.floor((Math.floor(player.speed) % 100) / 10)
+	var tens_digit_offset = 0;
+	if (last_digit == "9") tens_digit_offset = player.tens_digit_scale * (player.speed % 1);
+	if (player.speed >= 10) preciseSpeed.text(tens_digit, 0, tens_digit_offset);
+	preciseSpeed.text((tens_digit + 1) % 10, 0, tens_digit_offset - player.tens_digit_scale);
+	// hundreds digit
+	var hundreds_digit = Math.floor((Math.floor(player.speed) % 1000) / 100)
+	var hundreds_digit_offset = 0;
+	if (last_digit == "9" && tens_digit == '9') hundreds_digit_offset = player.tens_digit_scale * (player.speed % 1);
+	if (player.speed >= 100) preciseSpeed.text(hundreds_digit, -15, hundreds_digit_offset);
+	preciseSpeed.text((hundreds_digit + 1) % 10, -15, hundreds_digit_offset - player.tens_digit_scale);
+	draw.fill('white');
+	draw.triangle(-20, 5, -20, -5, -13, 0);
+	draw.stroke('lime');
+	draw.strokeWeight(2);
+	draw.fill(draw.color(0, 0, 0, 0));
+	var speed_trend = (player.speed - player.speed_last_frame) * 144 * player.speed_scale;
+	if (speed_trend) {
+		draw.line(-13, 0, -13, -speed_trend);
+		draw.triangle(-13, -speed_trend - (speed_trend > 0 ? 10 : -10), -18, -speed_trend, -8, -speed_trend);
+	}
+	draw.image(preciseSpeed, -80, -20);
+	draw.pop();
+	player.speed_last_frame = player.speed;
+}
+const font = 'sans-serif';
 var s = function (sketch) {
   sketch.setup = async function () {
 	  sketch.createCanvas(width, height);
 	  draw.angleMode('degrees');
+	  draw.textFont(font);
 	  draw.textAlign('center', 'center');
+	  speed = draw.createGraphics(80, height * 0.7);
+	  speed.textAlign('center', 'center');
+	  speed.textFont(font);
+	  preciseSpeed = draw.createGraphics(60, 40);
+	  preciseSpeed.textFont(font);
+	  preciseSpeed.translate(30, 20);
+	  preciseSpeed.textAlign('center', 'center');
+	  preciseSpeed.textSize(20);
+	  speed.translate(80, height * 0.35);
 	  setInterval(update, 1000 / 24);
   }
 }
@@ -128,18 +212,24 @@ window.addEventListener("deviceorientation", function (event) {
 
 	// JS math works in radians
 	var betaR = (beta / 180) * Math.PI;
-	var gammaR = (gamma / 180) * Math.PI;
+	var gammaR = (gamma + player.pitch_offset) / 180 * Math.PI;
 	var spinR = Math.atan2(Math.cos(betaR) * Math.sin(gammaR), Math.sin(betaR));
 
 	// convert back to degrees
 	var spin = (spinR * 180) / Math.PI;
-	var processedGamma = event.gamma;
+	var processedGamma = gammaR * 180 / Math.PI;
 	if (event.gamma > 0) processedGamma -= 90;
 	else processedGamma += 90;
 	player.pitch = processedGamma;
 	player.roll = -spin + 90;
 	if ('webkitCompassHeading' in event) player.heading = event.webkitCompassHeading;
 });
+/*window.addEventListener('devicemotion', function(event) {
+	var accel = event.acceleration;
+	player.inertial_velocity[0] += accel.x * event.interval / 1000;
+	player.inertial_velocity[1] += accel.y * event.interval / 1000;
+	player.speed = (player.inertial_velocity[0] ** 2 + player.inertial_velocity[1] ** 2) ** 0.5 * 3600 / 1852;
+});*/
 window.addEventListener("deviceorientationabsolute", (ev) => {
 	player.heading = ev.alpha;
 });
