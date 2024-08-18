@@ -65,7 +65,7 @@ function drawHorizon(draw, width, height) {
 	draw.stroke('lime');
 	draw.strokeWeight(2);
 	player.track = trackInterpolator.update();
-	draw.circle((player.track - player.heading) * player.heading_scale, displacement, 20);
+	draw.circle(((player.track - player.heading + 360) % 360) * player.heading_scale, displacement, 20);
 	draw.pop();
 }
 function update() {
@@ -121,7 +121,7 @@ function update() {
 	draw.pop();
 }
 var speedInterpolator = new Interpolator(0);
-var trackInterpolator = new Interpolator(0);
+var trackInterpolator = new Interpolator(player.heading);
 function updateSpeed(draw) {
 	player.speed = speedInterpolator.update();
 	draw.clear();
