@@ -186,7 +186,7 @@ var speedInterpolator = new Interpolator(0);
 var trackInterpolator = new Interpolator(player.heading, true);
 var altInterpolator = new Interpolator(player.altitude);
 function updateSpeed(draw) {
-	player.speed = speedInterpolator.update();
+	//player.speed = speedInterpolator.update();
 	draw.clear();
 	draw.push();
 	draw.stroke('white');
@@ -366,12 +366,12 @@ window.addEventListener("deviceorientation", function(event) {
 	player.roll = -spin + 90;
 	if ('webkitCompassHeading' in event) player.heading = event.webkitCompassHeading;
 });
-/*window.addEventListener('devicemotion', function(event) {
+window.addEventListener('devicemotion', function(event) {
 	var accel = event.acceleration;
 	player.inertial_velocity[0] += accel.x * event.interval / 1000;
 	player.inertial_velocity[1] += accel.y * event.interval / 1000;
 	player.speed = (player.inertial_velocity[0] ** 2 + player.inertial_velocity[1] ** 2) ** 0.5 * 3600 / 1852;
-});*/
+});
 window.addEventListener("deviceorientationabsolute", (ev) => {
 	player.heading = ev.alpha;
 });
