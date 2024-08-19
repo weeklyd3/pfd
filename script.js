@@ -71,11 +71,15 @@ function drawHorizon(draw, width, height) {
 	draw.strokeWeight(2);
 	player.track = trackInterpolator.update();
 	player.fpa = Math.atan2(player.vertical_speed * 3600 / 6076 / 100, player.speed) * 180 / Math.PI;
-	var coords = [0, displacement - player.fpa * player.pitch_scale];
+	var coords = [0, original_displacement - player.fpa * player.pitch_scale];
 	var left_turn = Math.abs((player.heading - player.track + 360) % 360);
 	var right_turn = Math.abs((player.track - player.heading + 360) % 360);
 	if (left_turn < right_turn) coords[0] = -left_turn * player.heading_scale;
 	else coords[0] = right_turn * player.heading_scale;
+	if (coords[0] > width / 2) coords[0] = width / 2;
+	if (coords[0] < -width / 2) coords[0] = -width / 2;
+	if (coords[1] > height / 2) coords[1] = height / 2;
+	if (coords[1] < -height / 2) coords[1] = -height / 2;
 	draw.translate(...coords);
 	draw.rotate(-player.roll);
 	draw.circle(0, 0, 20);
