@@ -1,6 +1,7 @@
 var width = 960;
 var height = 540;
 var player = {
+	'lastLocation': {},
 	'roll': 0,
 	'pitch': 0,
 	'pitch_offset': 0,
@@ -15,6 +16,7 @@ var player = {
 	'heading': 0,
 	'track': 0,
 	'altitude': 0,
+	'fl_scale': 35,
 	'vertical_speed': 0,
 	'fpa': 0,
 	'vs_scale': height * 0.105,
@@ -164,6 +166,10 @@ function update() {
 	if (player.vertical_speed < 0) vs_log = -vs_log;
 	draw.line(280, height * 0.05, 250, height * 0.05 - vs_log);
 	draw.strokeWeight(0);
+	var text = '';
+	for (const param of ['latitude', 'longitude', 'altitude', 'accuracy', 'altitudeAccuracy', 'heading', 'speed']) text += `${param}: ${player.lastLocation[param]}\n`;
+	draw.textAlign('center', 'top');
+	draw.text(text, width * 0.5, 0);
 	draw.fill('lime');
 	draw.push();
 	draw.textSize(14);
@@ -275,6 +281,24 @@ function updateAltitude(draw) {
 	preciseAlt.text(next_alt, 15, twenty_offset - player.twenty_scale);
 	preciseAlt.text(next2_alt, 15, twenty_offset - 2 * player.twenty_scale);
 	preciseAlt.text(prev_alt, 15, twenty_offset + player.twenty_scale);
+	draw.stroke('white');
+	draw.fill('white');
+	draw.textAlign('left', 'center');
+	for (var starting_fl = Math.floor((player.altitude - 100 * height * 0.4 / player.fl_scale) / 100); starting_fl <= Math.ceil((player.altitude + 100 * height * 0.4 / player.fl_scale) / 100) + 5; starting_fl++) {
+		draw.strokeWeight(2);
+		var y = (player.altitude - starting_fl * 100) * player.fl_scale / 100;
+		if (!(starting_fl % 5)) {
+			draw.line(0, y, 30, y);
+			draw.line(0, y, 80, y + 80 * 5 / 7);
+			draw.line(0, y, 80, y - 80 * 5 / 7);
+		}
+		else draw.line(0, y, 10, y);
+		draw.line(0, y + player.fl_scale / 2, 5, y + player.fl_scale / 2);
+		var text_x = 15;
+		if (!(starting_fl % 5)) text_x = 35;
+		draw.strokeWeight(0);
+		draw.text(starting_fl, text_x, y);
+	}
 	draw.image(preciseAlt, 10, -20);
 	draw.fill('white');
 	draw.strokeWeight(0);

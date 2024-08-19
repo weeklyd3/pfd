@@ -1,5 +1,6 @@
 function gotLocation(ev) {
 	if (player.disableGeolocation) return;
+	player.lastLocation = ev.coords;
 	var coords = ev.coords;
 	console.log(coords);
 	var speed = coords.speed;
