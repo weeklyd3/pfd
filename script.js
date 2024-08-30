@@ -8,6 +8,7 @@ var player = {
 	'pitch_scale': 7,
 	'heading_scale': 9,
 	'speed': 0,
+	'speed_trend': 0,
 	'speed_last_frame': 0,
 	'speed_scale': 4,
 	'ones_digit_scale': 20,
@@ -16,6 +17,7 @@ var player = {
 	'heading': 0,
 	'track': 0,
 	'altitude': 0,
+	'lastAltitude': 0,
 	'fl_scale': 35,
 	'vertical_speed': 0,
 	'fpa': 0,
@@ -72,7 +74,6 @@ function drawHorizon(draw, width, height) {
 	draw.fill(draw.color(0, 0, 0, 0));
 	draw.stroke('lime');
 	draw.strokeWeight(2);
-	player.track = trackInterpolator.update();
 	player.fpa = Math.atan2(player.vertical_speed * 3600 / 6076 / 100, player.speed) * 180 / Math.PI;
 	var coords = [0, original_displacement - player.fpa * player.pitch_scale];
 	var left_turn = Math.abs((player.heading - player.track + 360) % 360);
@@ -89,9 +90,16 @@ function drawHorizon(draw, width, height) {
 	draw.line(-10, 0, -40, 0);
 	draw.line(10, 0, 40, 0);
 	draw.line(0, -10, 0, -40);
+	var energy_cue_displacement = -player.speed_trend * 0.1;
+	var y_displacement = energy_cue_displacement * player.pitch_scale;
+	draw.line(-45, y_displacement, -60, y_displacement - 10);
+	draw.line(-45, y_displacement, -60, y_displacement + 10);
+	draw.line(45, y_displacement, 60, y_displacement - 10);
+	draw.line(45, y_displacement, 60, y_displacement + 10);
 	draw.pop();
 }
 function update() {
+	updateData();
 	draw.clear();
 	draw.push();
 	const ahrs_width = width * 0.6;
@@ -165,7 +173,7 @@ function update() {
 	if (log_vs < -8500) log_vs = -8500;
 	var vs_log = Math.log2(Math.abs(log_vs / 1000) + 1) * player.vs_scale;
 	if (player.vertical_speed < 0) vs_log = -vs_log;
-	draw.line(280, height * 0.05, 250, height * 0.05 - vs_log);
+	draw.line(280, height * 0.05 - vs_log * 0.5, 250, height * 0.05 - vs_log);
 	draw.strokeWeight(0);
 	var text = '';
 	for (const param of ['latitude', 'longitude', 'altitude', 'accuracy', 'altitudeAccuracy', 'heading', 'speed']) text += `${param}: ${player.lastLocation[param]}\n`;
@@ -175,7 +183,9 @@ function update() {
 	draw.push();
 	draw.textSize(14);
 	draw.textAlign('center', 'top');
-	if (Math.abs(player.vertical_speed) > 100) draw.text(Math.round(player.vertical_speed), 265, height * 0.4);
+	if (Math.abs(player.vertical_speed) > 100) {
+		draw.text(Math.round(player.vertical_speed) + "\n" + player.fpa.toFixed(2), 265, height * 0.4);
+	}
 	draw.pop();
 	updateSpeed(speed);
 	updateAltitude(alt);
@@ -187,7 +197,6 @@ var speedInterpolator = new Interpolator(0);
 var trackInterpolator = new Interpolator(player.heading, true);
 var altInterpolator = new Interpolator(player.altitude);
 function updateSpeed(draw) {
-	player.speed = speedInterpolator.update();
 	/*player.inertial_velocity[0] += player.inertial_velocity_change[0] / 2;
 	player.inertial_velocity[1] += player.inertial_velocity_change[1] / 24;
 	player.speed = (player.inertial_velocity[0] ** 2 + player.inertial_velocity[1] ** 2) ** 0.5 * 3600 / 1852;*/
@@ -238,6 +247,7 @@ function updateSpeed(draw) {
 	draw.strokeWeight(2);
 	draw.fill(draw.color(0, 0, 0, 0));
 	var speed_trend = (player.speed - player.speed_last_frame) * 144 * player.speed_scale;
+	player.speed_trend = speed_trend;
 	if (speed_trend) {
 		draw.line(-13, 0, -13, -speed_trend);
 		draw.triangle(-13, -speed_trend - (speed_trend > 0 ? 10 : -10), -18, -speed_trend, -8, -speed_trend);
@@ -249,9 +259,8 @@ function updateSpeed(draw) {
 function updateAltitude(draw) {
 	draw.push();
 	draw.clear();
-	const altitude = altInterpolator.update();
-	player.altitude = altitude;
-	player.vertical_speed = altInterpolator.velocity * 60 * 24;
+	const altitude = player.altitude;
+	player.vertical_speed = (player.altitude - player.lastAltitude) * 60 * 24;
 	preciseAlt.clear();
 	preciseAlt.background('white');
 	preciseAlt.fill('black');
@@ -308,6 +317,7 @@ function updateAltitude(draw) {
 	draw.strokeWeight(0);
 	draw.triangle(10, -5, 10, 5, 3, 0);
 	draw.pop();
+	player.lastAltitude = player.altitude;
 }
 const font = 'sans-serif';
 var s = function(sketch) {
@@ -368,6 +378,7 @@ window.addEventListener("deviceorientation", function(event) {
 	else processedGamma += 90;
 	player.pitch = processedGamma;
 	player.roll = -spin + 90;
+	if (Math.abs(player.roll) > 90) player.pitch = -player.pitch;
 	if ('webkitCompassHeading' in event) player.heading = event.webkitCompassHeading;
 });
 /*window.addEventListener('devicemotion', function(event) {

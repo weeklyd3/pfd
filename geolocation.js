@@ -13,10 +13,14 @@ function gotLocation(ev) {
 	trackInterpolator.addValue(track);
 	altInterpolator.addValue(alt * 100 / 12 / 2.54);
 }
+function geolocationError(err) {
+	console.log(err);
+	alert(err.message);
+}
 function startGeolocation() {
-	navigator.geolocation.watchPosition(gotLocation, alert, {
+	navigator.geolocation.watchPosition(gotLocation, geolocationError, {
 		enableHighAccuracy: false,
-		timeout: 5000,
-		maximumAge: 3000,
+		timeout: 0,
+		maximumAge: Infinity,
 	});
 }
