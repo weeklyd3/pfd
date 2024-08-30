@@ -20,7 +20,7 @@ function geolocationError(err) {
 function startGeolocation() {
 	navigator.geolocation.watchPosition(gotLocation, geolocationError, {
 		enableHighAccuracy: false,
-		timeout: 0,
+		timeout: Infinity,
 		maximumAge: Infinity,
 	});
 }
