@@ -46,28 +46,6 @@ function drawHorizon(draw, width, height) {
 		draw.rect(-width, -height * 2, width * 2, height * 2 + displacement);
 		draw.fill('#7e513c');
 		draw.rect(-width, displacement, width * 2, height * 2);
-	} else {
-		// draw video feed in lieu of horizon
-		const capture = player.camera.get();
-		var drawWidth = capture.width;
-		var drawHeight = capture.height;
-		if (capture.width / capture.height < width / height) {
-			var ratio = (capture.width / capture.height) / (width / height);
-			ratio *= width / capture.width;
-			drawWidth *= ratio;
-			drawHeight *= ratio;
-		}
-		else if (capture.width / capture.height > width / height) {
-			var ratio = (width / height) / (capture.width / capture.height);
-			ratio *= height / capture.height;
-			drawWidth *= ratio;
-			drawHeight *= ratio;
-		} else {
-			var ratio = height / capture.height;
-			drawWidth *= ratio;
-			drawHeight *= ratio;
-		}
-		draw.image(capture, -drawWidth / 2, -drawHeight / 2);
 	}
 	draw.stroke('white');
 	draw.fill('white');
@@ -129,12 +107,36 @@ function drawHorizon(draw, width, height) {
 	draw.pop();
 }
 function update() {
-	if (player.camera) player.capture = player.camera.get();
+	//if (player.camera) player.capture = player.camera.get();
 	updateData();
 	draw.clear();
 	draw.push();
 	const ahrs_width = width * 0.6;
 	draw.translate(ahrs_width / 2, height / 2);
+	if (player.camera) {
+		// draw video feed in lieu of horizon
+		player.camera.loadPixels();
+		const capture = player.camera.get();
+		var drawWidth = capture.width;
+		var drawHeight = capture.height;
+		if (capture.width / capture.height < width / height) {
+			var ratio = (capture.width / capture.height) / (width / height);
+			ratio *= width / capture.width;
+			drawWidth *= ratio;
+			drawHeight *= ratio;
+		}
+		else if (capture.width / capture.height > width / height) {
+			var ratio = (width / height) / (capture.width / capture.height);
+			ratio *= height / capture.height;
+			drawWidth *= ratio;
+			drawHeight *= ratio;
+		} else {
+			var ratio = height / capture.height;
+			drawWidth *= ratio;
+			drawHeight *= ratio;
+		}
+		draw.image(capture, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+	}
 	draw.rotate(player.roll);
 	drawHorizon(draw, ahrs_width, height);
 	draw.rotate(-player.roll);
@@ -378,7 +380,7 @@ var s = function(sketch) {
 		updateInterval = setInterval(update, 1000 / 24);
 	}
 }
-var draw = new p5(s, 'pad');
+var draw = new p5(s, 'pad'); 
 function startOrientation() {
 	if (typeof DeviceMotionEvent.requestPermission === "function") {
 		DeviceOrientationEvent.requestPermission().then(function(response) {

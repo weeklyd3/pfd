@@ -16,8 +16,8 @@
   <script src="interpolator.js"></script>
   <script src="script.js"></script>
   <button onclick="startOrientation()">attitude</button>
-  <button onclick="startGeolocation()">speed, altitude, location</button>
-  <button onclick="player.camera = draw.createCapture(draw.VIDEO);">camera view</button>
+  <button onclick="startGeolocation()">speed, altitude, location</button><br />
+  <button onclick="player.camera = draw.createCapture({video: true, audio: false}); player.camera.hide();">camera view</button>
   <script>startGeolocation();</script>
 </body>
 
