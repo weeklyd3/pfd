@@ -2,6 +2,7 @@ var width = 960;
 var height = 540;
 var player = {
 	'lastLocation': {},
+	'gyro': {'roll': 0, 'pitch': 0, 'heading': 0},
 	'roll': 0,
 	'pitch': 0,
 	'pitch_offset': 0,
@@ -23,7 +24,12 @@ var player = {
 	'fpa': 0,
 	'vs_scale': height * 0.105,
 	'inertial_velocity': [0, 0],
-	'inertial_velocity_change': [0, 0]
+	'inertial_altitude': 0,
+	'inertial_vs': 0,
+	'last_inertial_velocity_time': Date.now(),
+	'inertial_velocity_change': [0, 0],
+	'camera': undefined,
+	'fov': [108, 69]
 }
 function heading(deg) {
 	return (deg + 720) % 360;
@@ -35,10 +41,34 @@ function drawHorizon(draw, width, height) {
 	var original_displacement = displacement;
 	if (displacement > max_displacement) displacement = max_displacement;
 	if (displacement < -max_displacement) displacement = -max_displacement;
-	draw.fill('blue');
-	draw.rect(-width, -height * 2, width * 2, height * 2 + displacement);
-	draw.fill('#7e513c');
-	draw.rect(-width, displacement, width * 2, height * 2);
+	if (!player.camera) {
+		draw.fill('blue');
+		draw.rect(-width, -height * 2, width * 2, height * 2 + displacement);
+		draw.fill('#7e513c');
+		draw.rect(-width, displacement, width * 2, height * 2);
+	} else {
+		// draw video feed in lieu of horizon
+		const capture = player.camera.get();
+		var drawWidth = capture.width;
+		var drawHeight = capture.height;
+		if (capture.width / capture.height < width / height) {
+			var ratio = (capture.width / capture.height) / (width / height);
+			ratio *= width / capture.width;
+			drawWidth *= ratio;
+			drawHeight *= ratio;
+		}
+		else if (capture.width / capture.height > width / height) {
+			var ratio = (width / height) / (capture.width / capture.height);
+			ratio *= height / capture.height;
+			drawWidth *= ratio;
+			drawHeight *= ratio;
+		} else {
+			var ratio = height / capture.height;
+			drawWidth *= ratio;
+			drawHeight *= ratio;
+		}
+		draw.image(capture, -drawWidth / 2, -drawHeight / 2);
+	}
 	draw.stroke('white');
 	draw.fill('white');
 	draw.strokeWeight(2);
@@ -99,6 +129,7 @@ function drawHorizon(draw, width, height) {
 	draw.pop();
 }
 function update() {
+	if (player.camera) player.capture = player.camera.get();
 	updateData();
 	draw.clear();
 	draw.push();
@@ -344,7 +375,7 @@ var s = function(sketch) {
 		preciseAlt.translate(35, 20);
 		preciseAlt.textAlign('center', 'center');
 		preciseAlt.textSize(17);
-		setInterval(update, 1000 / 24);
+		updateInterval = setInterval(update, 1000 / 24);
 	}
 }
 var draw = new p5(s, 'pad');
@@ -376,18 +407,21 @@ window.addEventListener("deviceorientation", function(event) {
 	var processedGamma = gammaR * 180 / Math.PI;
 	if (event.gamma > 0) processedGamma -= 90;
 	else processedGamma += 90;
-	player.pitch = processedGamma;
-	player.roll = -spin + 90;
-	if (Math.abs(player.roll) > 90) player.pitch = -player.pitch;
-	if ('webkitCompassHeading' in event) player.heading = event.webkitCompassHeading;
+	player.gyro.pitch = processedGamma;
+	player.gyro.roll = -spin + 90;
+	if (Math.abs(player.roll) > 90) player.gyro.pitch = -player.pitch;
+	if ('webkitCompassHeading' in event) player.gyro.heading = event.webkitCompassHeading;
 });
-/*window.addEventListener('devicemotion', function(event) {
+window.addEventListener('devicemotion', function(event) {
+	var now = Date.now();
+	var interval = now - player.last_inertial_velocity_time;
 	var accel = event.acceleration;
 	player.inertial_velocity_change = [accel.x, accel.y];
-	/*player.inertial_velocity[0] += accel.x * event.interval / 1000;
-	player.inertial_velocity[1] += accel.y * event.interval / 1000;
-	player.speed = (player.inertial_velocity[0] ** 2 + player.inertial_velocity[1] ** 2) ** 0.5 * 3600 / 1852;*/
-//});
+	player.inertial_velocity[0] += accel.x * interval / 1000;
+	player.inertial_velocity[1] += accel.y * interval / 1000;
+	player.last_inertial_velocity_time = Date.now();
+	// player.speed = (player.inertial_velocity[0] ** 2 + player.inertial_velocity[1] ** 2) ** 0.5 * 3600 / 1852;
+});
 window.addEventListener("deviceorientationabsolute", (ev) => {
 	player.heading = ev.alpha;
 });
