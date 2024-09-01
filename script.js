@@ -49,6 +49,10 @@ function drawHorizon(draw, width, height) {
 	}
 	draw.stroke('white');
 	draw.fill('white');
+	if (player.camera) {
+		draw.stroke('lime');
+		draw.fill('lime');
+	}
 	draw.strokeWeight(2);
 	draw.line(-width / 2, original_displacement, width / 2, original_displacement);
 	const start_hdg = Math.floor(player.heading / 10) * 10 - 140;
