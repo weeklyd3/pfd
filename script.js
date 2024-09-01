@@ -29,7 +29,7 @@ var player = {
 	'last_inertial_velocity_time': Date.now(),
 	'inertial_velocity_change': [0, 0],
 	'camera': undefined,
-	'fov': [108, 69]
+	'fov': [58.986, 36]
 }
 function heading(deg) {
 	return (deg + 720) % 360;
