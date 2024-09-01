@@ -434,3 +434,6 @@ window.addEventListener('devicemotion', function(event) {
 window.addEventListener("deviceorientationabsolute", (ev) => {
 	player.heading = ev.alpha;
 });
+onerror = (err) => {
+	document.querySelector('#status').textContent = err.message;
+}
