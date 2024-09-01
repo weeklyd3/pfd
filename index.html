@@ -17,8 +17,22 @@
   <script src="script.js"></script>
   <button onclick="startOrientation()">attitude</button>
   <button onclick="startGeolocation()">speed, altitude, location</button><br />
-  <button onclick="player.camera = draw.createCapture({video: true, audio: false}); player.camera.hide();">camera view</button>
-  <script>startGeolocation();</script>
+  <button onclick="player.camera = draw.createCapture({video: { deviceId: { exact: document.querySelector('#camera').value } }, audio: false, facingMode: 'environment'}); player.camera.hide();">camera view</button>
+  <label>camera select <select id="camera"></select></label>
+  <script>startGeolocation();     
+  navigator.mediaDevices.enumerateDevices().then(function (devices) {
+    for(var i = 0; i < devices.length; i ++){
+        var device = devices[i];
+        if (device.kind === 'videoinput') {
+            var option = document.createElement('option');
+            option.value = device.deviceId;
+            console.log(device);
+            option.text = device.label || device.deviceId || 'camera ' + (i + 1);
+            document.querySelector('select#camera').appendChild(option);
+        }
+    };
+});
+  </script>
 </body>
 
 </html>
