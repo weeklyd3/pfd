@@ -414,7 +414,7 @@ window.addEventListener("deviceorientation", function(event) {
 	else processedGamma += 90;
 	player.gyro.pitch = processedGamma;
 	player.gyro.roll = -spin + 90;
-	if (Math.abs(player.roll) > 90) player.gyro.pitch = -player.pitch;
+	if (Math.abs(player.gyro.roll) > 90) player.gyro.pitch = -player.pitch;
 	if ('webkitCompassHeading' in event) player.gyro.heading = event.webkitCompassHeading;
 });
 window.addEventListener('devicemotion', function(event) {
