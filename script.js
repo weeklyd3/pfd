@@ -135,6 +135,9 @@ function update() {
 			drawWidth *= ratio;
 			drawHeight *= ratio;
 		}
+		player.pitch_scale = drawHeight / player.fov[1];
+		player.heading_scale = drawWidth / player.fov[0];
+		console.log(player.pitch_scale, player.heading_scale);
 		draw.image(capture, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
 	}
 	draw.rotate(player.roll);
@@ -377,8 +380,8 @@ var s = function(sketch) {
 		preciseAlt.translate(35, 20);
 		preciseAlt.textAlign('center', 'center');
 		preciseAlt.textSize(17);
-		updateInterval = setInterval(update, 1000 / 24);
-	}
+	};
+	sketch.draw = update;
 }
 var draw = new p5(s, 'pad'); 
 function startOrientation() {
