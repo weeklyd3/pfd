@@ -17,6 +17,7 @@
   <script src="script.js"></script>
   <button onclick="startOrientation()">attitude</button>
   <button onclick="startGeolocation()">speed, altitude, location</button><br />
+  <button onclick="player.camera = null; player.pitch_scale = player.old_pitch_scale; player.heading_scale = player.old_heading_scale;">plain brown+blue</button>
   <button onclick="player.camera = draw.createCapture({video: { deviceId: { exact: document.querySelector('#camera').value } }, audio: false, facingMode: 'environment'}); loadDevices(); player.camera.hide();">camera view</button>
   <button onclick="loadDevices()">reload camera list</button>
   <label>camera select <select id="camera"></select></label>
