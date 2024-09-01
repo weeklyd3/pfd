@@ -362,6 +362,7 @@ var s = function(sketch) {
 	sketch.setup = async function() {
 		sketch.createCanvas(width, height);
 		draw.angleMode('degrees');
+		draw.frameRate(30);
 		draw.textFont(font);
 		draw.textAlign('center', 'center');
 		speed = draw.createGraphics(80, height * 0.7);
