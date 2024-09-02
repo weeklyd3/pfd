@@ -265,9 +265,9 @@ function updateHeading(heading, track) {
 	draw.line(10, -height * 0.32 + 15, 0, -height * 0.32);
 	draw.pop();
 	draw.strokeWeight(0);
-	draw.text(`HDG ${player.heading}`, -35, height * 0.45);
+	draw.text(`HDG ${Math.round(player.heading)}`, -35, height * 0.45);
 	draw.fill('magenta');
-	draw.text(`TRK ${player.track}`, 35, height * 0.45);
+	draw.text(`TRK ${Math.round(player.track)}`, 35, height * 0.45);
 }
 var speedInterpolator = new Interpolator(0);
 var trackInterpolator = new Interpolator(player.heading, true);
