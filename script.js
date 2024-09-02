@@ -2,7 +2,7 @@ var width = 960;
 var height = 540;
 var player = {
 	'lastLocation': {},
-	'gyro': {'roll': 0, 'pitch': 0, 'heading': 0},
+	'gyro': {'roll': 0, 'pitch': 0, 'heading': 0, 'enabled': false},
 	'roll': 0,
 	'pitch': 0,
 	'pitch_offset': 0,
@@ -227,9 +227,47 @@ function update() {
 	draw.pop();
 	updateSpeed(speed);
 	updateAltitude(alt);
+	updateHeading(player.heading, player.track);
 	draw.image(speed, -250, -height * 0.3);
 	draw.image(alt, 170, -height * 0.3);
 	draw.pop();
+}
+function updateHeading(heading, track) {
+	draw.fill(draw.color(0, 0, 0, 125));
+	draw.circle(0, height * 0.6, height * 0.65);
+	draw.fill('white');
+	draw.push();
+	draw.strokeWeight(2);
+	draw.stroke('white');
+	draw.translate(0, height * 0.6);
+	draw.rotate(-player.heading);
+	for (var i = 0; i < 36; i++) {
+		draw.strokeWeight(0);
+		draw.text(i, 0, -height * 0.29);
+		draw.strokeWeight(2);
+		draw.line(0, height * 0.3, 0, height * 0.325);
+		for (var j = 0; j < 10; j += 2) {
+			draw.rotate(2);
+			draw.line(0, height * 0.32, 0, height * 0.325);
+		}
+	}
+	draw.pop();
+	draw.strokeWeight(1);
+	draw.stroke('white');
+	draw.line(0, height * 0.6, 0, height * 0.28);
+	draw.push();
+	draw.strokeWeight(2);
+	draw.stroke('magenta');
+	draw.translate(0, height * 0.6);
+	draw.rotate(player.track - player.heading);
+	draw.line(0, 0, 0, -height * 0.32);
+	draw.line(-10, -height * 0.32 + 15, 0, -height * 0.32);
+	draw.line(10, -height * 0.32 + 15, 0, -height * 0.32);
+	draw.pop();
+	draw.strokeWeight(0);
+	draw.text(`HDG ${player.heading}`, -35, height * 0.45);
+	draw.fill('magenta');
+	draw.text(`TRK ${player.track}`, 35, height * 0.45);
 }
 var speedInterpolator = new Interpolator(0);
 var trackInterpolator = new Interpolator(player.heading, true);
@@ -399,6 +437,7 @@ function startOrientation() {
 	}
 }
 window.addEventListener("deviceorientation", function(event) {
+	player.gyro.enabled = true;
 	// https://stackoverflow.com/a/42799567/15578194
 	// those angles are in degrees
 	var alpha = event.alpha;
