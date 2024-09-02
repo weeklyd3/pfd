@@ -65,7 +65,7 @@ var sources = {
 	}
 }
 var randomLocation = {'speed': Math.random() * 140 + 140, 'accel': (Math.random() - 0.5) * 0.12, 'jerk': 0, 'vs': (Math.random() - 0.5) * 5000, 'vs_trend': 0, 'altitude': Math.random() * 37000, 'track': 0, 'turnRate': 0, 'pitch': 0, 'roll': 0};
-var selected_sources = {'location': "geolocation", 'attitude': "gyro"};
+var selected_sources = {'location': "inertial", 'attitude': "gyro"};
 function updateData() {
 	for (const data of Object.keys(selected_sources)) {
 		for (const func of Object.keys(sources[data])) sources[data][func].update();
