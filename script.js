@@ -38,7 +38,7 @@ function heading(deg) {
 }
 function drawHorizon(draw, width, height) {
 	draw.push();
-	var max_displacement = height * 0.45;
+	var max_displacement = height * 0.25;
 	var displacement = player.pitch * player.pitch_scale;
 	var original_displacement = displacement;
 	if (displacement > max_displacement) displacement = max_displacement;
@@ -52,15 +52,15 @@ function drawHorizon(draw, width, height) {
 	draw.stroke('white');
 	draw.fill('white');
 	draw.strokeWeight(2);
-	draw.line(-width / 2, original_displacement, width / 2, original_displacement);
+	draw.line(-width / 2, displacement, width / 2, displacement);
 	const start_hdg = Math.floor(player.heading / 10) * 10 - 140;
 	for (var i = start_hdg;
 		i <= start_hdg + 280; i += 10) {
 		draw.strokeWeight(2);
 		var x = -(player.heading - i) * player.heading_scale;
-		draw.line(x, original_displacement, x, original_displacement - 10);
+		draw.line(x, displacement, x, displacement - 10);
 		draw.strokeWeight(0);
-		draw.text(heading(i) / 10, x, original_displacement + 9);
+		draw.text(heading(i) / 10, x, displacement + 9);
 	}
 	for (var i = -90; i <= 90; i += 10) {
 		var y = original_displacement - i * player.pitch_scale;
