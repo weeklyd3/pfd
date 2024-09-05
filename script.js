@@ -52,16 +52,6 @@ function drawHorizon(draw, width, height) {
 	draw.stroke('white');
 	draw.fill('white');
 	draw.strokeWeight(2);
-	draw.line(-width / 2, displacement, width / 2, displacement);
-	const start_hdg = Math.floor(player.heading / 10) * 10 - 140;
-	for (var i = start_hdg;
-		i <= start_hdg + 280; i += 10) {
-		draw.strokeWeight(2);
-		var x = -(player.heading - i) * player.heading_scale;
-		draw.line(x, displacement, x, displacement - 10);
-		draw.strokeWeight(0);
-		draw.text(heading(i) / 10, x, displacement + 9);
-	}
 	for (var i = -90; i <= 90; i += 10) {
 		var y = original_displacement - i * player.pitch_scale;
 		draw.strokeWeight(2);
@@ -78,6 +68,28 @@ function drawHorizon(draw, width, height) {
 			draw.text(i, -45, y);
 			draw.text(i, 45, y);
 		}
+	}
+	draw.strokeWeight(2);
+	draw.line(-width / 2, displacement, width / 2, displacement);
+	if (displacement != max_displacement) {
+		if (player.pitch < 0) {
+			draw.fill('blue');
+			draw.rect(-width, -height * 2, width * 2, height * 2 + displacement);
+		}
+		if (player.pitch > 0) {
+			draw.fill('#7e513c');
+			draw.rect(-width, displacement, width * 2, height * 2);
+		}
+		draw.fill('white');
+	}
+	const start_hdg = Math.floor(player.heading / 10) * 10 - 140;
+	for (var i = start_hdg;
+		i <= start_hdg + 280; i += 10) {
+		draw.strokeWeight(2);
+		var x = -(player.heading - i) * player.heading_scale;
+		draw.line(x, displacement, x, displacement - 10);
+		draw.strokeWeight(0);
+		draw.text(heading(i) / 10, x, displacement + 9);
 	}
 	draw.strokeWeight(0);
 	draw.triangle(0, -150, 7, -140, -7, -140);
