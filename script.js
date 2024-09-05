@@ -74,7 +74,7 @@ function drawHorizon(draw, width, height) {
 	if (displacement != original_displacement) {
 		if (player.pitch < 0) {
 			draw.fill('blue');
-			draw.rect(-width, -height * 2, width * 2, height * 2 + displacement);
+			if (!player.camera) draw.rect(-width, -height * 2, width * 2, height * 2 + displacement);
 			var y = displacement - player.pitch_scale * 2.5;
 			draw.fill('white');
 			for (var i = 0; i < 40; i += 10) {
@@ -94,7 +94,7 @@ function drawHorizon(draw, width, height) {
 		}
 		if (player.pitch > 0) {
 			draw.fill('#7e513c');
-			draw.rect(-width, displacement, width * 2, height * 2);
+			if (!player.camera) draw.rect(-width, displacement, width * 2, height * 2);
 			var y = displacement + player.pitch_scale * 2.5;
 			draw.fill('white');
 			for (var i = 0; i > -40; i -= 10) {
