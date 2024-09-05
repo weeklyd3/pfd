@@ -71,14 +71,46 @@ function drawHorizon(draw, width, height) {
 	}
 	draw.strokeWeight(2);
 	draw.line(-width / 2, displacement, width / 2, displacement);
-	if (displacement != max_displacement) {
+	if (displacement != original_displacement) {
 		if (player.pitch < 0) {
 			draw.fill('blue');
 			draw.rect(-width, -height * 2, width * 2, height * 2 + displacement);
+			var y = displacement - player.pitch_scale * 2.5;
+			draw.fill('white');
+			for (var i = 0; i < 40; i += 10) {
+				draw.strokeWeight(2);
+				draw.line(-10, y, 10, y);
+				y -= player.pitch_scale * 2.5;
+				draw.line(-20, y, 20, y);
+				y -= player.pitch_scale * 2.5;
+				draw.line(-10, y, 10, y);
+				y -= player.pitch_scale * 2.5;
+				draw.line(-35, y, 35, y);
+				draw.strokeWeight(0);
+				draw.text(i + 10, 45, y);
+				draw.text(i + 10, -45, y);
+				y -= player.pitch_scale * 2.5;
+			}
 		}
 		if (player.pitch > 0) {
 			draw.fill('#7e513c');
 			draw.rect(-width, displacement, width * 2, height * 2);
+			var y = displacement + player.pitch_scale * 2.5;
+			draw.fill('white');
+			for (var i = 0; i > -40; i -= 10) {
+				draw.strokeWeight(2);
+				draw.line(-10, y, 10, y);
+				y += player.pitch_scale * 2.5;
+				draw.line(-20, y, 20, y);
+				y += player.pitch_scale * 2.5;
+				draw.line(-10, y, 10, y);
+				y += player.pitch_scale * 2.5;
+				draw.line(-35, y, 35, y);
+				draw.strokeWeight(0);
+				draw.text(i - 10, 45, y);
+				draw.text(i - 10, -45, y);
+				y += player.pitch_scale * 2.5;
+			}
 		}
 		draw.fill('white');
 	}
@@ -97,7 +129,7 @@ function drawHorizon(draw, width, height) {
 	draw.stroke('lime');
 	draw.strokeWeight(2);
 	player.fpa = Math.atan2(player.vertical_speed * 3600 / 6076 / 100, player.speed) * 180 / Math.PI;
-	var coords = [0, original_displacement - player.fpa * player.pitch_scale];
+	var coords = [0, Math.max(Math.min(original_displacement - player.fpa * player.pitch_scale, Math.abs(displacement)), -Math.abs(displacement))];
 	var left_turn = Math.abs((player.heading - player.track + 360) % 360);
 	var right_turn = Math.abs((player.track - player.heading + 360) % 360);
 	if (left_turn < right_turn) coords[0] = -left_turn * player.heading_scale;
